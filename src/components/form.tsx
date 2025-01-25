@@ -1,7 +1,9 @@
 "use client"
 import React, {useEffect, useState} from "react";
 import {Calendar, Phone, User} from "lucide-react";
+import {throttle} from "lodash";
 import toast, {Toaster} from "react-hot-toast";
+
 
 
 
@@ -16,6 +18,7 @@ export default function Form() {
 
     const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [inputs, setInputs] = useState<forms[]>([]); // 改為陣列
     // 定義用來暫存單一輸入資料的 state
     const [formInput, setFormInput] = useState<forms>({
@@ -23,10 +26,20 @@ export default function Form() {
         age: 0,
         phone: "",
     });
+
+    const throttledToast = throttle((message: string) => {
+        toast.error(message);
+    }, 3000);
     // 更新暫存資料的函式
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
         window.localStorage.setItem(name, value);
+        if (name === "age") {
+       if (!/^\d*$/.test(value)) {
+           throttledToast("請輸入數字")
+           return;
+       }
+   }
         setFormInput((prev) => ({
             ...prev,
             [name]: name === "age" ? Number(value) : value, // 如果是 age，將值轉為數字
@@ -35,13 +48,21 @@ export default function Form() {
 
     // 提交表單的處理函式
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault(); // 防止頁面重新加載
-        const newInputs = [...inputs, formInput];
-        setInputs(newInputs);// 將暫存資料加入到陣列中
+        e.preventDefault();
 
-        window.localStorage.setItem("data", JSON.stringify(newInputs));// 將資料存入 localStorage
+        if (editingIndex !== null) {
+            // 編輯現有項目
+            const newInputs = [...inputs];
+            newInputs[editingIndex] = formInput;
+            setInputs(newInputs);
+            setEditingIndex(null);
+        } else {
+            // 添加新項目
+            setInputs([...inputs, formInput]);
+        }
 
-        setFormInput({name: "", age: 0, phone: ""}); // 重置表單輸入
+        setFormInput({ name: "", age: 0, phone: "" });
+        window.localStorage.setItem("data", JSON.stringify(inputs));
     };
     const handleDel = (e: React.MouseEvent<HTMLButtonElement>) => {
         const {name} = e.target as HTMLButtonElement;
@@ -52,11 +73,8 @@ export default function Form() {
         window.localStorage.setItem("data", JSON.stringify(newInputs));
     }
     const handleEdit = (index: number) => {
-        const editItem = inputs[index];
-        setFormInput(editItem);
-        const newInputs = inputs.filter((_, i) => i !== index);
-        setInputs(newInputs);
-        localStorage.setItem('data', JSON.stringify(newInputs));
+        setEditingIndex(index);
+        setFormInput(inputs[index]);
     };
     const loadData = () => {
         const data = window.localStorage.getItem("data");
@@ -104,7 +122,7 @@ export default function Form() {
                         <tbody>
                         {[...Array(4)].map((_, i) => (
                             <tr key={i}>
-                                <td className="skeleton  p-6 w-40"></td>
+                                <td className="skeleton  p-6 w-20"></td>
                                 <td className="skeleton  p-6"></td>
                                 <td className="skeleton  p-6"></td>
                                 <td className="skeleton  p-6"></td>
