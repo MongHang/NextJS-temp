@@ -121,6 +121,8 @@ export default function Weather() {
                         src={`https:${weatherData.current.condition.icon}`}
                         alt="天氣圖標"
                         className="w-16 h-16"
+                        width="200"
+                        height="200"
                       />
                     )}
                   </div>

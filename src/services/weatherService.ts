@@ -68,7 +68,7 @@ export const weatherService = {
     try {
       const response = await axios.get(baseApiUrl, {
         params: {
-          q: latitude,longitude, // 城市名稱，例如 'Kaohsiung, Taiwan'
+          q: latitude,longitude,
           days: 1, // 預測天數
           key: apiKey // API 密鑰
         },
