@@ -6,6 +6,7 @@ import {LocationState, WeatherData} from "@/types/locationType";
 
 
 
+
 export default function Weather() {
   const [location, setLocation] = useState<LocationState>({
     latitude: null,
@@ -14,6 +15,8 @@ export default function Weather() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [apikey, setApikey] = useState<string |null>(null);
+
 
   const handleGeolocationError = (error: GeolocationPositionError) => {
     switch (error.code) {
@@ -65,26 +68,38 @@ export default function Weather() {
     });
   };
 
-  const fetchWeatherData = async (lat: number, lon: number) => {
+  const fetchWeatherData = async (lat: number, lon: number ,apikey:string) => {
     try {
+      console.log(lat,lon,apikey);
       const data = await weatherService.Decimal_degree(
-        String(lat),
-        String(lon)
+          String(Math.round(lat * 100) / 100),
+          String(Math.round(lon * 100) / 100),
+          apikey
       );
+      console.log(data);
       setWeatherData(data);
     } catch (error) {
       console.error('Error fetching weather data:', error);
       setError('獲取天氣數據失敗');
     }
   };
-
+  // 初始化 API key
+  useEffect(() => {
+    const Key = process.env.WEATHER_API_KEY;
+    if (Key) {
+      setApikey(Key);
+    } else {
+      setError('API Key 未配置');
+    }
+  }, []);
   useEffect(() => {
     fetchPosition();
   }, []);
 
   useEffect(() => {
-    if (location.latitude && location.longitude) {
-      fetchWeatherData(location.latitude, location.longitude);
+    if (location.latitude && location.longitude && apikey) {
+      fetchWeatherData(location.latitude, location.longitude,apikey);
+      console.log(apikey);
     }
   }, [location]);
 
