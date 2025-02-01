@@ -3,7 +3,8 @@
 // import {Myarry} from "@/types/myarry";
 //
 // import Card from "@/components/card";
-import Form from "@/components/form";
+// import Form from "@/components/form";
+import TestForm from "@/components/test";
 
 
 export default function Page() {
@@ -34,7 +35,8 @@ export default function Page() {
       {/*  </tbody>*/}
       {/*</table>*/}
       {/*    <Card num={99}/>*/}
-          <Form/>
+      {/*    <Form/>*/}
+          <TestForm/>
       </>
   )
 
